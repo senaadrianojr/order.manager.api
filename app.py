@@ -34,7 +34,7 @@ def before_request_func():
 def generate_order_url():
     payload = {'salesman': 'Caseira Massas', 'doc_id': '99.999.999/9999-99'}
     order_token = jwttoken.generate_default_order_token(payload=payload)
-    order_url = '{domain_app_url}/pedidos?token={token}'.format(domain_app_url=leo_order_request_url, token=order_token)
+    order_url = '{order_app_url}?token={token}'.format(order_app_url=leo_order_request_url, token=order_token)
     return {'order_url': order_url}, 200
 
 
