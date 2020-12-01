@@ -16,6 +16,7 @@ app.config[
 app.json_encoder = MongodbJSONEncoder
 app.json_decoder = MongodbJSONDecoder
 mongo = PyMongo(app)
+
 leo_order_request_url = 'http://localhost:3000/pedidos'
 order_query_filters = \
     ('customer_name', 'created_at_start', 'created_at_end', 'delivery_date_start', 'delivery_date_end')
@@ -119,3 +120,7 @@ def salesman_app_login():
     payload = {'salesman': user_details.get('name'), 'doc_id': user_details.get('doc_id')}
 
     return {'token': jwttoken.generate_salesman_token(payload=payload)}, 200
+
+
+if __name__ == '__main__':
+    app.run(debug=False)
