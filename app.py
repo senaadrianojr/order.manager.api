@@ -12,7 +12,7 @@ from flask_cors import CORS
 
 
 app = Flask(__name__)
-API_CORS_ORIGINS = os.getenv('API_CORS_ORGINS')
+API_CORS_ORIGINS = os.getenv('API_CORS_ORIGINS')
 CORS(app, resources={r'/*': {'origins': API_CORS_ORIGINS}})
 app.config['MONGO_URI'] = os.getenv('MONGO_URI')
 app.config['CORS_HEADERS'] = 'Content-Type'
