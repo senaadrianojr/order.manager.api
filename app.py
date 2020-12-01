@@ -7,17 +7,16 @@ from supports import jwttoken
 from supports import dateutils
 import base64
 from bson import ObjectId
+import os
 
 
 app = Flask(__name__)
-app.config[
-    'MONGO_URI'
-] = 'mongodb+srv://leouser:kgxqBvTPC8r7TZy0@leo-01.zirwl.mongodb.net/leo?retryWrites=true&w=majority'
+app.config['MONGO_URI'] = os.getenv('MONGO_URI')
 app.json_encoder = MongodbJSONEncoder
 app.json_decoder = MongodbJSONDecoder
 mongo = PyMongo(app)
 
-leo_order_request_url = 'http://localhost:3000/pedidos'
+leo_order_request_url = os.getenv('LEO_ORDER_REQUEST_URL')
 order_query_filters = \
     ('customer_name', 'created_at_start', 'created_at_end', 'delivery_date_start', 'delivery_date_end')
 
