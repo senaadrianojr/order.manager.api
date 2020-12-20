@@ -14,7 +14,7 @@ from flask_cors import CORS, cross_origin
 app = Flask(__name__)
 API_CORS_ORIGINS = os.getenv('API_CORS_ORIGINS')
 # CORS(app)
-CORS(app, resources={r'/*': {'origins': API_CORS_ORIGINS}})
+CORS(app, resources={r'/*': {'origins': '*'}})
 app.config['MONGO_URI'] = os.getenv('MONGO_URI')
 app.config['CORS_HEADERS'] = 'Content-Type'
 app.json_encoder = MongodbJSONEncoder
@@ -55,7 +55,13 @@ def save_orders():
 
 @app.route('/orders/<order_id>', methods=['GET'])
 def get_orders_by_id(order_id):
-    response = mongo.db.orders.fin_one({'_id': ObjectId(oid=order_id)})
+    response = mongo.db.orders.find_one({'_id': ObjectId(oid=order_id)})
+    return response, 200
+
+
+@app.route('/orders/resume/<order_id>', methods=['GET'])
+def get_order_resume_by_id(order_id):
+    response = mongo.db.orders.find_one({'_id': ObjectId(oid=order_id)})
     return response, 200
 
 

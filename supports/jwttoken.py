@@ -1,11 +1,13 @@
 import jwt
 import pytz
 from datetime import datetime, timedelta
+import re
 
 sa_timezone = pytz.timezone('America/Sao_Paulo')
 secret_key = 'mysecret'
-
+public_routes = (r'^(/salesman/login)$', r'^(/orders/\w{1,})$', r'^(/orders/resume/\w{1,})$')
 excluded_methods = ("OPTIONS")
+
 
 def generate_default_order_token(payload={}, exp_time_hours=24):
     current_datetime = datetime.now(sa_timezone)
@@ -33,7 +35,8 @@ def decode(token):
 
 def verify_request_token(request):
     try:
-        if request.method not in excluded_methods and request.path not in public_routes:
+        excluded_route = route_matches_excluded_pattern(request.path)
+        if request.method not in excluded_methods and not excluded_route:
             token = request.headers.get('token')
             if not token or token.isspace():
                 return {'msg': 'missing token'}, 401
@@ -46,5 +49,11 @@ def verify_request_token(request):
     except jwt.InvalidTokenError:
         return {'msg': 'invalid token'}, 401
 
-#TODO: usar regex para validar rotas publicas
-public_routes = ['/salesman/login', '/orders/<order_id>']
+
+def route_matches_excluded_pattern(str_value):
+    value_matches = False
+    for regex_pattern in public_routes:
+        p = re.compile(regex_pattern)
+        if p.match(str_value):
+            value_matches = True
+    return value_matches
