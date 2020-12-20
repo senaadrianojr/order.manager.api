@@ -8,13 +8,13 @@ from supports import dateutils
 import base64
 from bson import ObjectId
 import os
-from flask_cors import CORS
+from flask_cors import CORS, cross_origin
 
 
 app = Flask(__name__)
 API_CORS_ORIGINS = os.getenv('API_CORS_ORIGINS')
-# CORS(app, resources={r'/*': {'origins': API_CORS_ORIGINS}})
-CORS(app)
+# CORS(app)
+CORS(app, resources={r'/*': {'origins': API_CORS_ORIGINS}})
 app.config['MONGO_URI'] = os.getenv('MONGO_URI')
 app.config['CORS_HEADERS'] = 'Content-Type'
 app.json_encoder = MongodbJSONEncoder

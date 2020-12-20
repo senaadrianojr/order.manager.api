@@ -5,6 +5,7 @@ from datetime import datetime, timedelta
 sa_timezone = pytz.timezone('America/Sao_Paulo')
 secret_key = 'mysecret'
 
+excluded_methods = ("OPTIONS")
 
 def generate_default_order_token(payload={}, exp_time_hours=24):
     current_datetime = datetime.now(sa_timezone)
@@ -32,7 +33,7 @@ def decode(token):
 
 def verify_request_token(request):
     try:
-        if request.path not in public_routes:
+        if request.method not in excluded_methods and request.path not in public_routes:
             token = request.headers.get('token')
             if not token or token.isspace():
                 return {'msg': 'missing token'}, 401
