@@ -47,7 +47,7 @@ def generate_order_url():
 def save_orders():
     new_order = request.json
     new_order['created_at'] = dateutils.current_zoned_datetime('America/Sao_Paulo')
-    new_order['status'] = 'Pendente'
+    new_order['status'] = 'pendente'
     mongo.db.orders.insert_one(new_order)
     response = {'created_id': new_order.get('_id')}
     return response, 201
@@ -57,6 +57,23 @@ def save_orders():
 def get_orders_by_id(order_id):
     response = mongo.db.orders.find_one({'_id': ObjectId(oid=order_id)})
     return response, 200
+
+
+@app.route('/orders/<order_id>', methods=['PUT'])
+def update_orders(order_id):
+    order_founded = mongo.db.orders.find_one({'_id': ObjectId(oid=order_id)})
+    if order_founded is None:
+        return {}, 404
+
+    new_order = request.json
+    updated_order = {**order_founded,
+                     **new_order,
+                     'created_at': order_founded.get('created_at'),
+                     'last_update': dateutils.current_zoned_datetime('America/Sao_Paulo')}
+
+    mongo.db.orders.replace_one({'_id': ObjectId(oid=order_id)}, updated_order)
+
+    return {}, 203
 
 
 @app.route('/orders/resume/<order_id>', methods=['GET'])
