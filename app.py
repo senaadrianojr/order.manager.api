@@ -1,6 +1,6 @@
 from flask import Flask
 from flask import request
-from flask_pymongo import PyMongo
+from flask_pymongo import PyMongo, ASCENDING, DESCENDING
 from supports.encoder import MongodbJSONEncoder
 from supports.decoder import MongodbJSONDecoder
 from supports import jwttoken
@@ -23,7 +23,15 @@ mongo = PyMongo(app)
 
 leo_order_request_url = os.getenv('LEO_ORDER_REQUEST_URL')
 order_query_filters = \
-    ('customer_name', 'created_at_start', 'created_at_end', 'delivery_date_start', 'delivery_date_end')
+    ('customer_name',
+     'created_at_start',
+     'created_at_end',
+     'delivery_date_start',
+     'delivery_date_end',
+     'page_number',
+     'page_size',
+     'order_by',
+     'sort')
 
 default_datetime_fmt = '%d/%m/%Y %H:%M:%S'
 default_zone = 'America/Sao_Paulo'
@@ -86,6 +94,8 @@ def get_order_resume_by_id(order_id):
 def get_orders():
     query_filter = {}
     request_query_params = request.args
+    pagination = {'page_number': 1, 'page_size': 25}
+    ordination = {'order_by': 'created_at', 'sort': ASCENDING}
     if len(request_query_params):
         rqp_filter = {key: value for (key, value) in request_query_params.items() if key in order_query_filters}
         for key, value in rqp_filter.items():
@@ -107,11 +117,29 @@ def get_orders():
                 if 'delivery_date' not in query_filter.keys():
                     query_filter['delivery_date'] = {}
                 query_filter['delivery_date']['$lt'] = dateutils.parse(value, default_datetime_fmt)
+            elif key == 'page_number' and int(value) > 0:
+                pagination['page_number'] = int(value)
+            elif key == 'page_size' and int(value) > 0:
+                pagination['page_size'] = int(value)
+            elif key == 'sort' and value is not None:
+                ordination['sort'] = ASCENDING if value == 'asc' else DESCENDING
+            elif key == 'order_by' and value is not None:
+                ordination['order_by'] = value
+
     else:
         default_date_filter_start, default_data_filter_end = dateutils.current_zoned_datetime_with_range(default_zone, 14)
         query_filter = {'created_at': {'$gte': default_date_filter_start, '$lt': default_data_filter_end}}
 
-    result = list(mongo.db.orders.find(query_filter))
+    if pagination.get('page_number') == 1:
+        cursor = mongo.db.orders.find(query_filter)\
+            .sort(ordination.get('order_by'), ordination.get('sort'))\
+            .limit(pagination.get('page_size'))
+    else:
+        skip = (pagination.get('page_size') - 1) * pagination.get('page_number')
+        limit = pagination.get('page_size')
+        cursor = mongo.db.orders.find(query_filter).skip(skip).limit(limit)
+
+    result = list(cursor)
     response = {"content": result}
     return response, 200
 
