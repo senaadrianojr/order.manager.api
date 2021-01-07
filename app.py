@@ -8,7 +8,7 @@ from supports import dateutils
 import base64
 from bson import ObjectId
 import os
-from flask_cors import CORS, cross_origin
+from flask_cors import CORS
 
 
 app = Flask(__name__)
@@ -33,7 +33,7 @@ order_query_filters = \
      'order_by',
      'sort')
 
-default_datetime_fmt = '%d/%m/%Y %H:%M:%S'
+default_datetime_fmt = '%d/%m/%Y %H:%M:%S%z'
 default_zone = 'America/Sao_Paulo'
 # %Z = UTC; %z = +0000
 
@@ -104,19 +104,19 @@ def get_orders():
             elif key == 'created_at_start':
                 if 'created_at' not in query_filter.keys():
                     query_filter['created_at'] = {}
-                query_filter['created_at']['$gte'] = dateutils.parse(value, default_datetime_fmt)
+                query_filter['created_at']['$gte'] = dateutils.parse_with_fixed_tz(value, default_datetime_fmt)
             elif key == 'created_at_end':
                 if 'created_at' not in query_filter.keys():
                     query_filter['created_at'] = {}
-                query_filter['created_at']['$lt'] = dateutils.parse(value, default_datetime_fmt)
+                query_filter['created_at']['$lt'] = dateutils.parse_with_fixed_tz(value, default_datetime_fmt)
             elif key == 'delivery_date_start':
                 if 'delivery_date' not in query_filter.keys():
                     query_filter['delivery_date'] = {}
-                query_filter['delivery_date']['$gte'] = dateutils.parse(value, default_datetime_fmt)
+                query_filter['delivery_date']['$gte'] = dateutils.parse_with_fixed_tz(value, default_datetime_fmt)
             elif key == 'delivery_date_end':
                 if 'delivery_date' not in query_filter.keys():
                     query_filter['delivery_date'] = {}
-                query_filter['delivery_date']['$lt'] = dateutils.parse(value, default_datetime_fmt)
+                query_filter['delivery_date']['$lt'] = dateutils.parse_with_fixed_tz(value, default_datetime_fmt)
             elif key == 'page_number' and int(value) > 0:
                 pagination['page_number'] = int(value)
             elif key == 'page_size' and int(value) > 0:
@@ -130,6 +130,9 @@ def get_orders():
         default_date_filter_start, default_data_filter_end = dateutils.current_zoned_datetime_with_range(default_zone, 14)
         query_filter = {'created_at': {'$gte': default_date_filter_start, '$lt': default_data_filter_end}}
 
+    total_records_found = mongo.db.orders.find(query_filter).count()
+    max_page_number = round(total_records_found/pagination.get('page_size'))
+    pages = list(range(1, max_page_number + 1))
     if pagination.get('page_number') == 1:
         cursor = mongo.db.orders.find(query_filter)\
             .sort(ordination.get('order_by'), ordination.get('sort'))\
@@ -140,7 +143,7 @@ def get_orders():
         cursor = mongo.db.orders.find(query_filter).skip(skip).limit(limit)
 
     result = list(cursor)
-    response = {"content": result}
+    response = {"content": result, "pages": pages}
     return response, 200
 
 
