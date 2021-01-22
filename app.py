@@ -138,7 +138,7 @@ def get_orders():
             .sort(ordination.get('order_by'), ordination.get('sort'))\
             .limit(pagination.get('page_size'))
     else:
-        skip = (pagination.get('page_size') - 1) * pagination.get('page_number')
+        skip = (pagination.get('page_number') - 1) * pagination.get('page_size')
         limit = pagination.get('page_size')
         cursor = mongo.db.orders.find(query_filter).skip(skip).limit(limit)
 
