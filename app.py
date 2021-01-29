@@ -162,6 +162,14 @@ def create_products():
     return response, 201
 
 
+@app.route('/products/<product_id>', methods=['PUT'])
+def update_products(product_id):
+    updated_product = request.json
+    updated_product['last_update'] = dateutils.current_zoned_datetime('America/Sao_Paulo')
+    mongo.db.products.replace_one({'_id': ObjectId(oid=product_id)}, updated_product)
+    return {}, 203
+
+
 @app.route('/salesman/login', methods=['POST'])
 def salesman_app_login():
     auth = request.json
