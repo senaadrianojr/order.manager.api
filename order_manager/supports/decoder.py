@@ -1,6 +1,6 @@
+import re
 from flask import json
 from bson import ObjectId
-import re
 
 FLAGS = re.VERBOSE | re.MULTILINE | re.DOTALL
 WHITESPACE = re.compile(r'[ \t\n\r]*', FLAGS)

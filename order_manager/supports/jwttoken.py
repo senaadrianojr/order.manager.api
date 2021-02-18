@@ -1,7 +1,7 @@
 import jwt
 import pytz
-from datetime import datetime, timedelta
 import re
+from datetime import datetime, timedelta
 
 sa_timezone = pytz.timezone('America/Sao_Paulo')
 secret_key = 'mysecret'
