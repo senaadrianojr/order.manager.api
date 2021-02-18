@@ -1,0 +1,9 @@
+[default]
+EXTENSIONS = [
+    "order_manager.extensions.database",
+    "order_manager.extensions.security",
+    "order_manager.extensions.supports",
+    "order_manager.blueprints.resources.products",
+    "order_manager.blueprints.resources.auth",
+    "order_manager.blueprints.resources.orders"
+]
